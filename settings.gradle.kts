@@ -1,4 +1,4 @@
-rootProject.name = "analytics-kotlin-destination-template"
+rootProject.name = "analytics-kotlin-consent-management"
 include(":lib")
 includeBuild("publishing-plugins")
 include(":testapp")
