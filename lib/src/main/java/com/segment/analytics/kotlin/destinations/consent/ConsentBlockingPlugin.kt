@@ -9,10 +9,14 @@ import kotlinx.serialization.json.JsonObject
 import sovran.kotlin.SynchronousStore
 
 
-private const val CONSENT_SETTINGS = "consent"
-private const val CATEGORY_PREFERENCE = "categoryPreference"
+internal const val CONSENT_SETTINGS = "consent"
+internal const val CATEGORY_PREFERENCE = "categoryPreference"
 
-class ConsentBlockingPlugin(var destinationKey: String, var store: SynchronousStore, var allowSegmentPreferenceEvent: Boolean = true) : Plugin {
+class ConsentBlockingPlugin(
+    var destinationKey: String,
+    var store: SynchronousStore,
+    var allowSegmentPreferenceEvent: Boolean = true
+) : Plugin {
     override lateinit var analytics: Analytics
     override val type: Plugin.Type = Plugin.Type.Enrichment
     private val TAG = "ConsentBlockingPlugin"
@@ -46,12 +50,18 @@ class ConsentBlockingPlugin(var destinationKey: String, var store: SynchronousSt
     private fun getConsentCategoriesFromEvent(event: BaseEvent): MutableList<String> {
         val consentJsonArray = mutableListOf<String>()
 
-        val consentJsonObject = (event.context[CONSENT_SETTINGS] as JsonObject)
-        val categoryPreferenceJsonObject = consentJsonObject[CATEGORY_PREFERENCE] as JsonObject
-        categoryPreferenceJsonObject.forEach { category, consentGiven ->
-            if (consentGiven.toString() == "true") {
-                // Add this category to the list of necessary categories
-                consentJsonArray.add(category)
+        val consentSettingsJson = event.context[CONSENT_SETTINGS]
+        if (consentSettingsJson != null) {
+            val consentJsonObject = (consentSettingsJson as JsonObject)
+            val categoryPreferenceJson = consentJsonObject[CATEGORY_PREFERENCE]
+            if (categoryPreferenceJson != null) {
+                val categoryPreferenceJsonObject = categoryPreferenceJson as JsonObject
+                categoryPreferenceJsonObject.forEach { category, consentGiven ->
+                    if (consentGiven.toString() == "true") {
+                        // Add this category to the list of necessary categories
+                        consentJsonArray.add(category)
+                    }
+                }
             }
         }
         return consentJsonArray
