@@ -1,5 +1,3 @@
-// add badges and stuff here
-
 # Twilio Consent Management 
 
 This plugin provides the framework for Segment's Analytics SDK to integrate with Consent Management Platform (CMP) SDKs like OneTrust.
