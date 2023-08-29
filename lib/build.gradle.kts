@@ -14,7 +14,7 @@ android {
 
     defaultConfig {
         multiDexEnabled = true
-        minSdk = 21
+        minSdk = 24
         targetSdk = 31
 
         testInstrumentationRunner = "android.support.test.runner.AndroidJUnitRunner"
