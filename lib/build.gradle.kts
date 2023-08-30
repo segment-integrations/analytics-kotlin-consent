@@ -15,7 +15,7 @@ android {
     defaultConfig {
         multiDexEnabled = true
         minSdk = 24
-        targetSdk = 31
+        targetSdk = 33
 
         testInstrumentationRunner = "android.support.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("proguard-consumer-rules.pro")
