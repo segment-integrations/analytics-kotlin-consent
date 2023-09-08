@@ -17,7 +17,7 @@ After the user selects “Allow All” or “Save Preferences” a callback is f
 Additionally, besides the initial pop-up the website owner must give users a way to later change any preferences they originally selected. This is usually accomplished by providing a link to display the customization screen.
 
 
-## Segment manged CMP
+## Segment managed CMP
 
 Segment provides a framework for users to integrate any CMP they choose and use the Segment web app to map consent categories to device mode destinations. This information is sent down the analytics-kotlin SDK and stored for later lookup.
 
