@@ -35,48 +35,48 @@ Before
 
 ```json
 {
-"anonymousId": "23adfd82-aa0f-45a7-a756-24f2a7a4c895",
-"type": "track",
-"event": "MyEvent",
-"userId": "u123",
-"timestamp": "2023-01-01T00:00:00.000Z",
-"context": {
-"traits": {
-"email": "peter@example.com",
-"phone": "555-555-5555"
-},
-"device" : {
-"advertisingId": "7A3CBBA0-BDF5-11E4-8DFC-AA02A5B093DB"
-}
-}
+    "anonymousId": "23adfd82-aa0f-45a7-a756-24f2a7a4c895",
+    "type": "track",
+    "event": "MyEvent",
+    "userId": "u123",
+    "timestamp": "2023-01-01T00:00:00.000Z",
+    "context": {
+        "traits": {
+            "email": "peter@example.com",
+            "phone": "555-555-5555"
+        },
+        "device": {
+            "advertisingId": "7A3CBBA0-BDF5-11E4-8DFC-AA02A5B093DB"
+        }
+    }
 }
 ```
 After
 
 ```json
 {
-"anonymousId": "23adfd82-aa0f-45a7-a756-24f2a7a4c895",
-"type": "track",
-"event": "MyEvent",
-"userId": "u123",
-"timestamp": "2023-01-01T00:00:00.000Z",
-"context": {
-"traits": {
-"email": "peter@example.com",
-"phone": "555-555-5555"
-},
-"device" : {
-"advertisingId": "7A3CBBA0-BDF5-11E4-8DFC-AA02A5B093DB"
-},
-"consent": {
-"categoryPreferences" : {
-"Advertising": true,
-"Analytics": false,
-"Functional": true,
-"DataSharing": false
-}
-}
-}
+    "anonymousId": "23adfd82-aa0f-45a7-a756-24f2a7a4c895",
+    "type": "track",
+    "event": "MyEvent",
+    "userId": "u123",
+    "timestamp": "2023-01-01T00:00:00.000Z",
+    "context": {
+        "traits": {
+            "email": "peter@example.com",
+            "phone": "555-555-5555"
+        },
+        "device": {
+            "advertisingId": "7A3CBBA0-BDF5-11E4-8DFC-AA02A5B093DB"
+        },
+        "consent": {
+            "categoryPreferences": {
+                "Advertising": true,
+                "Analytics": false,
+                "Functional": true,
+                "DataSharing": false
+            }
+        }
+    }
 }
 ```
 
@@ -86,24 +86,24 @@ When notified by the CMP SDK that consent has changed, a track event with name â
 
 ```json
 {
-"anonymousId": "23adfd82-aa0f-45a7-a756-24f2a7a4c895",
-"type": "track",
-"event": "Segment Consent Preference",
-"userId": "u123",
-"timestamp": "2023-01-01T00:00:00.000Z",
-"context": {
-"device" : {
-"advertisingId": "7A3CBEA0-BDF5-11E4-8DFC-AA07A5B093DB"
-},
-"consent": {
-"categoryPreferences" : {
-"Advertising": true,
-"Analytics": false,
-"Functional": true,
-"DataSharing": false
-}
-}
-}
+    "anonymousId": "23adfd82-aa0f-45a7-a756-24f2a7a4c895",
+    "type": "track",
+    "event": "Segment Consent Preference",
+    "userId": "u123",
+    "timestamp": "2023-01-01T00:00:00.000Z",
+    "context": {
+        "device": {
+            "advertisingId": "7A3CBEA0-BDF5-11E4-8DFC-AA07A5B093DB"
+        },
+        "consent": {
+            "categoryPreferences": {
+                "Advertising": true,
+                "Analytics": false,
+                "Functional": true,
+                "DataSharing": false
+            }
+        }
+    }
 }
 ```
 
