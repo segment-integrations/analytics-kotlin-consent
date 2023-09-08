@@ -134,7 +134,7 @@ To get started add the dependency for consent management to your app's build.gra
 
 Next pick from one of the prebuilt integration:
 
-- [OneTrust]()
+- [OneTrust](https://github.com/segment-integrations/analytics-kotlin-consent-onetrust)
 
 Or build your own integration (see below)
 
