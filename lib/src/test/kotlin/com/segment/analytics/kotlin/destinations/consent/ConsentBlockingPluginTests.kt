@@ -2,7 +2,6 @@ package com.segment.analytics.kotlin.destinations.consent
 
 import com.segment.analytics.kotlin.core.TrackEvent
 import com.segment.analytics.kotlin.core.emptyJsonObject
-import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
 import org.junit.jupiter.api.Assertions.assertNotNull
@@ -24,8 +23,8 @@ class ConsentBlockingPluginTests {
         val blockingPlugin = ConsentBlockingPlugin("foo", store)
 
         // All categories correct
-        var stamppedEvent = TrackEvent(properties = emptyJsonObject, event = "MyEvent")
-        stamppedEvent.context = buildJsonObject {
+        var stampedEvent = TrackEvent(properties = emptyJsonObject, event = "MyEvent")
+        stampedEvent.context = buildJsonObject {
             put(CONSENT_SETTINGS, buildJsonObject {
                 put(CATEGORY_PREFERENCE, buildJsonObject {
                     put("cat1", JsonPrimitive(true))
@@ -33,11 +32,11 @@ class ConsentBlockingPluginTests {
                 })
             })
         }
-        var processedEvent = blockingPlugin.execute(stamppedEvent)
+        var processedEvent = blockingPlugin.execute(stampedEvent)
         assertNotNull(processedEvent)
 
-        stamppedEvent = TrackEvent(properties = emptyJsonObject, event = "MyEvent")
-        stamppedEvent.context = buildJsonObject {
+        stampedEvent = TrackEvent(properties = emptyJsonObject, event = "MyEvent")
+        stampedEvent.context = buildJsonObject {
             put(CONSENT_SETTINGS, buildJsonObject {
                 put(CATEGORY_PREFERENCE, buildJsonObject {
                     put("cat1", JsonPrimitive(true))
@@ -46,7 +45,7 @@ class ConsentBlockingPluginTests {
                 })
             })
         }
-        processedEvent = blockingPlugin.execute(stamppedEvent)
+        processedEvent = blockingPlugin.execute(stampedEvent)
         assertNotNull(processedEvent)
     }
 

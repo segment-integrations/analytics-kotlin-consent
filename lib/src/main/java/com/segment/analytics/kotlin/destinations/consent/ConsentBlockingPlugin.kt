@@ -34,7 +34,6 @@ class ConsentBlockingPlugin(
             requiredConsentCategories.forEach {
                 if (!consentJsonArray.contains(it)) {
 
-
                     if (allowSegmentPreferenceEvent && event is TrackEvent && event.event == ConsentManagementPlugin.EVENT_SEGMENT_CONSENT_PREFERENCE) {
                         // IF event is the SEGMENT CONSENT PREFERENCE event let it through
                         return event
@@ -43,6 +42,11 @@ class ConsentBlockingPlugin(
                     }
                 }
             }
+        } else {
+            // Given that this Blocking Plugin was put in place in this Destination we are
+            // expecting to have required consent categories. For some reason we don't have
+            // this information so we must default to BLOCKING the event.
+            return null
         }
         return event
     }
