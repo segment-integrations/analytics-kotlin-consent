@@ -87,7 +87,7 @@ class ConsentBlockingPluginTests {
     }
 
     @Test
-    fun `allow when nothing in store`() {
+    fun `block when nothing in store`() {
         val store = SynchronousStore()
         store.provide(ConsentState())
         val blockingPlugin = ConsentBlockingPlugin("foo", store)
@@ -96,7 +96,7 @@ class ConsentBlockingPluginTests {
         var unstamppedEvent = TrackEvent(properties = emptyJsonObject, event = "MyEvent")
         unstamppedEvent.context = emptyJsonObject
         var processedEvent = blockingPlugin.execute(unstamppedEvent)
-        assertNotNull(processedEvent)
+        assertNull(processedEvent)
 
         var stamppedEvent = TrackEvent(properties = emptyJsonObject, event = "MyEvent")
         stamppedEvent.context = buildJsonObject {
@@ -109,6 +109,6 @@ class ConsentBlockingPluginTests {
         }
 
         processedEvent = blockingPlugin.execute(stamppedEvent)
-        assertNotNull(processedEvent)
+        assertNull(processedEvent)
     }
 }
