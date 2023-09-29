@@ -4,16 +4,17 @@ import com.segment.analytics.kotlin.core.Analytics
 import com.segment.analytics.kotlin.core.BaseEvent
 import com.segment.analytics.kotlin.core.Settings
 import com.segment.analytics.kotlin.core.platform.Plugin
+import com.segment.analytics.kotlin.core.utilities.toJsonElement
 import kotlinx.serialization.json.*
 import sovran.kotlin.Action
 import sovran.kotlin.State
 import sovran.kotlin.SynchronousStore
 
 
-data class ConsentState(var destinationCategoryMap: Map<String, Array<String>> = mapOf()): State {
+data class ConsentState(var destinationCategoryMap: Map<String, Array<String>> = mapOf()) : State {
 }
 
-class UpdateConsentStateAction(var value: Map<String, Array<String>>): Action<ConsentState> {
+class UpdateConsentStateAction(var value: Map<String, Array<String>>) : Action<ConsentState> {
     override fun reduce(state: ConsentState): ConsentState {
         val newState = state.copy()
         newState.destinationCategoryMap = value
@@ -24,7 +25,8 @@ class UpdateConsentStateAction(var value: Map<String, Array<String>>): Action<Co
 
 class ConsentManagementPlugin(
     private var store: SynchronousStore,
-    private var consentProvider: ConsentCategoryProvider? = null) : Plugin {
+    private var consentProvider: ConsentCategoryProvider
+) : Plugin {
 
 
     companion object {
@@ -36,6 +38,7 @@ class ConsentManagementPlugin(
         const val CONSENT_KEY = "consent"
         const val CATEGORY_PREFERENCE_KEY = "categoryPreference"
         const val CATEGORIES_KEY = "categories"
+        const val ALL_CATEGORIES_KEY = "allCategories"
     }
 
 
@@ -52,6 +55,19 @@ class ConsentManagementPlugin(
     override fun update(settings: Settings, type: Plugin.UpdateType) {
 
         val state = consentStateFrom(settings.integrations)
+
+
+        val consentSettingsJson = settings.toJsonElement().jsonObject.get(CONSENT_SETTINGS_KEY)
+        consentSettingsJson?.let {
+            val allCategoriesJsonArray = it.jsonObject.get(ALL_CATEGORIES_KEY) as? JsonArray
+            val allCategories: MutableList<String> = mutableListOf()
+            allCategoriesJsonArray?.forEach {
+                allCategories.add(it.toString())
+            }
+
+            this.consentProvider.setCategoryList(allCategories)
+        }
+
 
         // Update the store
         store.dispatch(UpdateConsentStateAction(state), ConsentState::class)
@@ -88,20 +104,18 @@ class ConsentManagementPlugin(
      * Add the consent status to the event's context object.
      */
     private fun stampEvent(event: BaseEvent) {
-        consentProvider?.let {
-            event.context = buildJsonObject {
-                event.context.forEach { key, json ->
-                    put(key, json)
-                }
-                put(CONSENT_KEY, buildJsonObject {
-                    put(CATEGORY_PREFERENCE_KEY, buildJsonObject {
-                        val categories = consentProvider?.getCategories()
-                        categories?.forEach { (category, status) ->
-                            put(category, JsonPrimitive(status))
-                        }
-                    })
-                })
+        event.context = buildJsonObject {
+            event.context.forEach { key, json ->
+                put(key, json)
             }
+            put(CONSENT_KEY, buildJsonObject {
+                put(CATEGORY_PREFERENCE_KEY, buildJsonObject {
+                    val categories = consentProvider.getCategories()
+                    categories.forEach { (category, status) ->
+                        put(category, JsonPrimitive(status))
+                    }
+                })
+            })
         }
     }
 
@@ -111,12 +125,5 @@ class ConsentManagementPlugin(
      */
     fun notifyConsentChanged() {
         analytics.track(EVENT_SEGMENT_CONSENT_PREFERENCE)
-    }
-
-    /**
-     * Sets the Consent Category provider that will be used to get consent category information.
-     */
-    fun setConsentCategoryProvider(provider: ConsentCategoryProvider) {
-        this.consentProvider = provider
     }
 }
