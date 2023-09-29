@@ -19,6 +19,11 @@ class ConsentManagementPluginTests {
         store.provide(ConsentState())
 
         val cp = object : ConsentCategoryProvider {
+
+            override fun setCategoryList(categories: List<String>) {
+                // NO OP
+            }
+
             override fun getCategories(): Map<String, Boolean> {
                 var categories = HashMap<String, Boolean>()
 
