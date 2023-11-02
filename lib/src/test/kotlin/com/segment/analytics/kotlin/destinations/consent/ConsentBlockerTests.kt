@@ -11,16 +11,17 @@ import org.junit.jupiter.api.TestInstance
 import sovran.kotlin.SynchronousStore
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class ConsentBlockingPluginTests {
+class ConsentBlockerTests {
 
     @Test
     fun `allow when consent available`() {
         val store = SynchronousStore()
-        store.provide(ConsentState())
-        var state: MutableMap<String, Array<String>> = HashMap()
-        state["foo"] = arrayOf("cat1", "cat2")
-        store.dispatch(UpdateConsentStateAction(state), ConsentState::class)
-        val blockingPlugin = ConsentBlockingPlugin("foo", store)
+        store.provide(ConsentState.defaultState)
+        var mappings: MutableMap<String, Array<String>> = HashMap()
+        mappings["foo"] = arrayOf("cat1", "cat2")
+        val state = ConsentState(mappings, false, true)
+        store.dispatch(UpdateConsentStateActionFull(state), ConsentState::class)
+        val blockingPlugin = ConsentBlocker("foo", store)
 
         // All categories correct
         var stampedEvent = TrackEvent(properties = emptyJsonObject, event = "MyEvent")
@@ -52,11 +53,12 @@ class ConsentBlockingPluginTests {
     @Test
     fun `blocks when missing consent`() {
         val store = SynchronousStore()
-        store.provide(ConsentState())
-        var state: MutableMap<String, Array<String>> = HashMap()
-        state["foo"] = arrayOf("cat1", "cat2")
-        store.dispatch(UpdateConsentStateAction(state), ConsentState::class)
-        val blockingPlugin = ConsentBlockingPlugin("foo", store)
+        store.provide(ConsentState.defaultState)
+        var mappings: MutableMap<String, Array<String>> = HashMap()
+        mappings["foo"] = arrayOf("cat1", "cat2")
+        val state = ConsentState(mappings, false, true)
+        store.dispatch(UpdateConsentStateActionFull(state), ConsentState::class)
+        val blockingPlugin = ConsentBlocker("foo", store)
 
         // Empty context
         var unstamppedEvent = TrackEvent(properties = emptyJsonObject, event = "MyEvent")
@@ -88,8 +90,8 @@ class ConsentBlockingPluginTests {
     @Test
     fun `block when nothing in store`() {
         val store = SynchronousStore()
-        store.provide(ConsentState())
-        val blockingPlugin = ConsentBlockingPlugin("foo", store)
+        store.provide(ConsentState.defaultState)
+        val blockingPlugin = ConsentBlocker("foo", store)
 
         // Empty context
         var unstamppedEvent = TrackEvent(properties = emptyJsonObject, event = "MyEvent")

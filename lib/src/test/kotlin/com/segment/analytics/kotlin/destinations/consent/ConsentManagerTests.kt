@@ -4,19 +4,18 @@ import com.segment.analytics.kotlin.core.TrackEvent
 import com.segment.analytics.kotlin.core.emptyJsonObject
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
-import kotlinx.serialization.json.jsonObject
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
 import sovran.kotlin.SynchronousStore
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class ConsentManagementPluginTests {
+class ConsentManagerTests {
 
     @Test
     fun `stamps events`() {
         val store = SynchronousStore()
-        store.provide(ConsentState())
+        store.provide(ConsentState.defaultState)
 
         val cp = object : ConsentCategoryProvider {
 
@@ -34,8 +33,7 @@ class ConsentManagementPluginTests {
             }
         }
 
-
-        val consentManagementPlugin = ConsentManagementPlugin(store, cp)
+        val consentManager = ConsentManager(store, cp)
 
         var event = TrackEvent(emptyJsonObject, "MyEvent")
         event.context = emptyJsonObject
@@ -47,7 +45,9 @@ class ConsentManagementPluginTests {
             }) })
         }
 
-        var processedEvent = consentManagementPlugin.execute(event)
+        consentManager.start()
+
+        var processedEvent = consentManager.execute(event)
 
         assertEquals(expectedContext, processedEvent?.context)
     }
