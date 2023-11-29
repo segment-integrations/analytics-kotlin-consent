@@ -11,7 +11,7 @@ class ConsentState(
 ) : State {
 
     companion object {
-        val defaultState = ConsentState(mutableMapOf(), false, false)
+        val defaultState = ConsentState(mutableMapOf(), true, true)
     }
 }
 

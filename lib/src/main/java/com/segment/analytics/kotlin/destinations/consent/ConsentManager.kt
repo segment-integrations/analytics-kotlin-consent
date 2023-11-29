@@ -60,7 +60,8 @@ class ConsentManager(
             // Add Segment Destination blocker
             val segmentDestination = it.find(Constants.SEGMENT_IO_KEY)
             segmentDestination.let {
-                val existingBlocker = segmentDestination?.analytics?.find(SegmentConsentBlocker::class)
+                val existingBlocker =
+                    segmentDestination?.analytics?.find(SegmentConsentBlocker::class)
                 if (existingBlocker == null) {
                     segmentDestination?.add(SegmentConsentBlocker(store))
                 }
@@ -71,9 +72,12 @@ class ConsentManager(
             for (key in destinationKeys) {
                 val destination = analytics.find(key)
                 destination.let {
-                    val existingBlock = destination?.analytics?.find(SegmentConsentBlocker::class)
-                    if (existingBlock == null) {
-                        destination?.add(ConsentBlocker(key, store))
+                    if (it?.key != Constants.SEGMENT_IO_KEY) {
+                        val existingBlock =
+                            destination?.analytics?.find(ConsentBlocker::class)
+                        if (existingBlock == null) {
+                            destination?.add(ConsentBlocker(key, store))
+                        }
                     }
                 }
             }
@@ -83,13 +87,13 @@ class ConsentManager(
     private fun consentStateFrom(settings: Settings): ConsentState {
 
         val destinationMapping = mutableMapOf<String, Array<String>>()
-        var hasUnmappedDestinations = false
-        var enabledAtSegment = false
+        var hasUnmappedDestinations = true
+        var enabledAtSegment = true
 
         // Add all mappings
         settings.integrations.forEach { integrationName, integrationJson ->
             // If the integration has the consent key:
-            integrationJson.jsonObject.get(CONSENT_SETTINGS_KEY)?.let {
+            integrationJson.jsonObject[CONSENT_SETTINGS_KEY]?.let {
 
                 // Build list of categories required for this integration
                 val categories: MutableList<String> = mutableListOf()
@@ -101,15 +105,23 @@ class ConsentManager(
         }
 
         // Set hasUnmappedDestinations
-        settings.toJsonElement().jsonObject.get(CONSENT_SETTINGS_KEY)?.let {
-            val jsonElement = it.jsonObject.get(HAS_UNMAPPED_DESTINATIONS_KEY)
-            println("hasUnmappedDestinations jsonElement: $jsonElement")
-            hasUnmappedDestinations = jsonElement.toString() == "true"
+        try {
+            settings.toJsonElement().jsonObject.get(CONSENT_SETTINGS_KEY)?.let {
+                val jsonElement = it.jsonObject.get(HAS_UNMAPPED_DESTINATIONS_KEY)
+                println("hasUnmappedDestinations jsonElement: $jsonElement")
+                hasUnmappedDestinations = jsonElement.toString() == "true"
+            }
+        } catch (t: Throwable) {
+            println("Couldn't parse settings object to check for 'hasUnmappedDestinations'")
         }
 
         // Set enabledAtSegment
-        settings.toJsonElement().jsonObject.get(CONSENT_SETTINGS_KEY)?.let {
-            enabledAtSegment = true
+        try {
+            settings.toJsonElement().jsonObject.get(CONSENT_SETTINGS_KEY)?.let {
+                enabledAtSegment = true
+            }
+        } catch (t: Throwable) {
+            println("Couldn't parse settings object to check if 'enabledAtSegment'.")
         }
 
         return ConsentState(destinationMapping, hasUnmappedDestinations, enabledAtSegment)
@@ -155,19 +167,6 @@ class ConsentManager(
             it()
         }
     }
-
-
-    /*
-    public func start() {
-        started = true
-        // replay events.  they'll be sent back through the system and get stamped above.
-        for event in queuedEvents {
-            analytics?.process(event: event)
-        }
-        // clear the cached queue.
-        queuedEvents.removeAll()
-    }
-     */
 
     fun start() {
         started.set(true)
