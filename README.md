@@ -153,6 +153,7 @@ Next you'll need to write some setup/init code where you have your
 Analytics setup:
 
 ```kotlin
+// Setup Analytics
 analytics = Analytics(SEGMENT_WRITE_KEY, applicationContext) {
     this.collectDeviceId = true
     this.trackApplicationLifecycleEvents = true
@@ -167,6 +168,7 @@ analytics = Analytics(SEGMENT_WRITE_KEY, applicationContext) {
 val myDestinationPlugin = myDestinationPlugin()
 analytics.add(myDestinationPlugin)
 
+// Create the Consent Category Provider that will get the status of consent categories
 val consentCategoryProvider = MyConsentCategoryProvider(cmpSDK)
 val store = SynchronousStore() // Use only a Synchronous store here!
 
@@ -175,51 +177,12 @@ val consentPlugin = ConsentManagementPlugin(store, consentCategoryProvider)
 // Add the Consent Plugin directly to analytics
 analytics.add(consentPlugin)
 
+// Use the CMP SDK to get the list of consent categories.
+consentCategoryProvider.setCategories(cmpSDK.getCategories())
 
-// Start the OneTrust SDK
-otPublishersHeadlessSDK.startSDK(
-    DOMAIN_URL,
-    DOMAIN_ID,
-    "en",
-    null,
-    false,
-    object : OTCallback {
-        override fun onSuccess(p0: OTResponse) {
-            Log.d(TAG, "onSuccess: SDK Started")
-            // Grab the categories
-            val categories = getGroupIds(MainApplication.otPublishersHeadlessSDK.domainGroupData)
-            
-            // set categories
-            consentCategoryProvider.setCategories(categories)
-
-            // Start the consent Plugin so that events are actually processed
-            consentPlugin.start()
-        }
-
-        override fun onFailure(p0: OTResponse) {
-            Log.d(TAG, "onFailure: Failed to start SDK")
-        }
-
-    })
-
-// Helper function
-
-    private fun getGroupIds(domainGroupData: JSONObject): List<String> {
-        val result: MutableList<String> = ArrayList()
-        try {
-            val groups = domainGroupData.getJSONArray("Groups")
-            for (i in 0 until groups.length()) {
-                val group = groups.getJSONObject(i)
-                val groupId = group.getString("OptanonGroupId")
-                result.add(groupId)
-            }
-        } catch (ex: JSONException) {
-            ex.printStackTrace()
-        }
-        return result
-    }
-
-
+// Once the categories have been set we can start processing events by starting
+// the Consent Management plugin
+consentPlugin.start()
 ```
 
 ## Building your own integration
