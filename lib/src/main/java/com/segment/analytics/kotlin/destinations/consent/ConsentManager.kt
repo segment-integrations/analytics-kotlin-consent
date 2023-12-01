@@ -174,7 +174,5 @@ class ConsentManager(
         while (queuedEvents.isNotEmpty()) {
             queuedEvents.poll()?.let { analytics.process(it) }
         }
-
-        queuedEvents.clear()
     }
 }
