@@ -142,32 +142,36 @@ Next you'll need to write some setup/init code where you have your
 Analytics setup:
 
 ```kotlin
+// Setup Analytics
 analytics = Analytics(SEGMENT_WRITE_KEY, applicationContext) {
-    this.collectDeviceId = true
-    this.trackApplicationLifecycleEvents = true
-    this.trackDeepLinks = true
-    this.flushPolicies = listOf(
-        CountBasedFlushPolicy(5), // Flush after 5 events
-        FrequencyFlushPolicy(5000) // Flush after 5 Seconds
-    )
+   this.collectDeviceId = true
+   this.trackApplicationLifecycleEvents = true
+   this.trackDeepLinks = true
+   this.flushPolicies = listOf(
+      CountBasedFlushPolicy(5), // Flush after 5 events
+      FrequencyFlushPolicy(5000) // Flush after 5 Seconds
+   )
 }
-
-// List of categories we care about; we will query the CMP SDK locally on the status
-// of these categories when stamping an event with consent status.
-val categories = listOf<String>("C0001", "C0002")
-val consentCategoryProvider = MyCmpConsentCategoryProvider(cmpSDK, categories)
-val store = SynchronousStore() // Use only a Synchronous store here!
-val consentPlugin = ConsentManagementPlugin(store, consentCategoryProvider)
-
-// Add the Consent Plugin directly to analytics
-analytics.add(consentPlugin)
 
 // Add the myDestination plugin into the main timeline
 val myDestinationPlugin = myDestinationPlugin()
 analytics.add(myDestinationPlugin)
 
-// Add the blocking plugin to this destination
-webhookDestinationPlugin.add(ConsentBlockingPlugin("my-destination", store))
+// Create the Consent Category Provider that will get the status of consent categories
+val consentCategoryProvider = MyConsentCategoryProvider(cmpSDK)
+val store = SynchronousStore() // Use only a Synchronous store here!
+
+val consentPlugin = ConsentManagementPlugin(store, consentCategoryProvider)
+
+// Add the Consent Plugin directly to analytics
+analytics.add(consentPlugin)
+
+// Use the CMP SDK to get the list of consent categories.
+consentCategoryProvider.setCategories(cmpSDK.getCategories())
+
+// Once the categories have been set we can start processing events by starting
+// the Consent Management plugin
+consentPlugin.start()
 ```
 
 ## Building your own integration

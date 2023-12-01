@@ -5,8 +5,8 @@ import com.segment.analytics.kotlin.core.BaseEvent
 import com.segment.analytics.kotlin.core.Settings
 import com.segment.analytics.kotlin.core.TrackEvent
 import com.segment.analytics.kotlin.core.platform.Plugin
-import com.segment.analytics.kotlin.destinations.consent.Constants.Companion.EVENT_SEGMENT_CONSENT_PREFERENCE
-import com.segment.analytics.kotlin.destinations.consent.Constants.Companion.SEGMENT_IO_KEY
+import com.segment.analytics.kotlin.destinations.consent.Constants.EVENT_SEGMENT_CONSENT_PREFERENCE
+import com.segment.analytics.kotlin.destinations.consent.Constants.SEGMENT_IO_KEY
 import kotlinx.serialization.json.JsonObject
 import sovran.kotlin.SynchronousStore
 
@@ -53,8 +53,8 @@ open class ConsentBlocker(
         return event
     }
 
-    private fun getConsentCategoriesFromEvent(event: BaseEvent): MutableList<String> {
-        val consentJsonArray = mutableListOf<String>()
+    private fun getConsentCategoriesFromEvent(event: BaseEvent): Set<String> {
+        val consentJsonArray = HashSet<String>()
 
         val consentSettingsJson = event.context[CONSENT_SETTINGS]
         if (consentSettingsJson != null) {

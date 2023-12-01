@@ -5,16 +5,21 @@ import com.segment.analytics.kotlin.core.BaseEvent
 import com.segment.analytics.kotlin.core.Settings
 import com.segment.analytics.kotlin.core.platform.EventPlugin
 import com.segment.analytics.kotlin.core.platform.Plugin
+import com.segment.analytics.kotlin.core.utilities.getBoolean
+import com.segment.analytics.kotlin.core.utilities.safeJsonObject
 import com.segment.analytics.kotlin.core.utilities.toJsonElement
-import com.segment.analytics.kotlin.destinations.consent.Constants.Companion.CATEGORIES_KEY
-import com.segment.analytics.kotlin.destinations.consent.Constants.Companion.CATEGORY_PREFERENCE_KEY
-import com.segment.analytics.kotlin.destinations.consent.Constants.Companion.CONSENT_KEY
-import com.segment.analytics.kotlin.destinations.consent.Constants.Companion.CONSENT_SETTINGS_KEY
-import com.segment.analytics.kotlin.destinations.consent.Constants.Companion.EVENT_SEGMENT_CONSENT_PREFERENCE
-import com.segment.analytics.kotlin.destinations.consent.Constants.Companion.HAS_UNMAPPED_DESTINATIONS_KEY
-import kotlinx.serialization.json.*
-
+import com.segment.analytics.kotlin.destinations.consent.Constants.CATEGORIES_KEY
+import com.segment.analytics.kotlin.destinations.consent.Constants.CATEGORY_PREFERENCE_KEY
+import com.segment.analytics.kotlin.destinations.consent.Constants.CONSENT_KEY
+import com.segment.analytics.kotlin.destinations.consent.Constants.CONSENT_SETTINGS_KEY
+import com.segment.analytics.kotlin.destinations.consent.Constants.EVENT_SEGMENT_CONSENT_PREFERENCE
+import com.segment.analytics.kotlin.destinations.consent.Constants.HAS_UNMAPPED_DESTINATIONS_KEY
+import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonPrimitive
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.jsonObject
 import sovran.kotlin.SynchronousStore
+import java.util.*
 import java.util.concurrent.atomic.AtomicBoolean
 
 
@@ -29,7 +34,7 @@ class ConsentManager(
     override val type: Plugin.Type = Plugin.Type.Enrichment
 
     // Event Queue
-    private var queuedEvents: MutableList<BaseEvent>? = mutableListOf<BaseEvent>()
+    private var queuedEvents: Queue<BaseEvent> = LinkedList()
 
     // Flag for Event Queue
     private var started = AtomicBoolean(false)
@@ -55,33 +60,28 @@ class ConsentManager(
         store.dispatch(UpdateConsentStateActionFull(state), ConsentState::class)
 
 
-        analytics?.let {
-
-            // Add Segment Destination blocker
-            val segmentDestination = it.find(Constants.SEGMENT_IO_KEY)
-            segmentDestination.let {
-                val existingBlocker =
-                    segmentDestination?.analytics?.find(SegmentConsentBlocker::class)
-                if (existingBlocker == null) {
-                    segmentDestination?.add(SegmentConsentBlocker(store))
-                }
+        // Add Segment Destination blocker
+        analytics.find(Constants.SEGMENT_IO_KEY)?.let { segmentDestination ->
+            val existingBlocker = analytics.find(SegmentConsentBlocker::class)
+            if (existingBlocker == null) {
+                segmentDestination.add(SegmentConsentBlocker(store))
             }
+        }
 
-            // Add Blocker to all other destinations
-            val destinationKeys = state.destinationCategoryMap.keys
-            for (key in destinationKeys) {
-                val destination = analytics.find(key)
-                destination.let {
-                    if (it?.key != Constants.SEGMENT_IO_KEY) {
-                        val existingBlock =
-                            destination?.analytics?.find(ConsentBlocker::class)
-                        if (existingBlock == null) {
-                            destination?.add(ConsentBlocker(key, store))
-                        }
+        // Add Blocker to all other destinations
+        val destinationKeys = state.destinationCategoryMap.keys
+        for (key in destinationKeys) {
+            analytics.find(key)?.let { destination ->
+                if (destination.key != Constants.SEGMENT_IO_KEY) {
+                    val existingBlockers =
+                        destination.findAll(ConsentBlocker::class)
+                    if (existingBlockers.isEmpty()) {
+                        destination.add(ConsentBlocker(key, store))
                     }
                 }
             }
         }
+
     }
 
     private fun consentStateFrom(settings: Settings): ConsentState {
@@ -107,9 +107,11 @@ class ConsentManager(
         // Set hasUnmappedDestinations
         try {
             settings.toJsonElement().jsonObject.get(CONSENT_SETTINGS_KEY)?.let {
-                val jsonElement = it.jsonObject.get(HAS_UNMAPPED_DESTINATIONS_KEY)
-                println("hasUnmappedDestinations jsonElement: $jsonElement")
-                hasUnmappedDestinations = jsonElement.toString() == "true"
+                it.jsonObject.getBoolean(HAS_UNMAPPED_DESTINATIONS_KEY)
+                    ?.let { serverHasUnmappedDestinations ->
+                        println("hasUnmappedDestinations jsonElement: $serverHasUnmappedDestinations")
+                        hasUnmappedDestinations = serverHasUnmappedDestinations == true
+                    }
             }
         } catch (t: Throwable) {
             println("Couldn't parse settings object to check for 'hasUnmappedDestinations'")
@@ -117,7 +119,7 @@ class ConsentManager(
 
         // Set enabledAtSegment
         try {
-            settings.toJsonElement().jsonObject.get(CONSENT_SETTINGS_KEY)?.let {
+            settings.toJsonElement().jsonObject.get(CONSENT_SETTINGS_KEY)?.safeJsonObject.let {
                 enabledAtSegment = true
             }
         } catch (t: Throwable) {
@@ -134,7 +136,7 @@ class ConsentManager(
             stampEvent(event)
             event
         } else {
-            queuedEvents?.add(event)
+            queuedEvents.add(event)
             null
         }
     }
@@ -163,19 +165,16 @@ class ConsentManager(
      * trigger the Segment Consent Preference event to be fired.
      */
     fun notifyConsentChanged() {
-        consentChange?.let {
-            it()
-        }
+        consentChange?.invoke()
     }
 
     fun start() {
         started.set(true)
 
-        for (event in queuedEvents!!) {
-            analytics?.process(event)
+        while (queuedEvents.isNotEmpty()) {
+            queuedEvents.poll()?.let { analytics.process(it) }
         }
 
-        queuedEvents?.clear()
-        queuedEvents = null
+        queuedEvents.clear()
     }
 }
