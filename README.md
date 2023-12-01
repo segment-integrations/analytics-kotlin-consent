@@ -153,11 +153,6 @@ Next you'll need to write some setup/init code where you have your
 Analytics setup:
 
 ```kotlin
-lateinit var otPublishersHeadlessSDK: OTPublishersHeadlessSDK
-
-//...
-
-
 analytics = Analytics(SEGMENT_WRITE_KEY, applicationContext) {
     this.collectDeviceId = true
     this.trackApplicationLifecycleEvents = true
@@ -172,7 +167,7 @@ analytics = Analytics(SEGMENT_WRITE_KEY, applicationContext) {
 val myDestinationPlugin = myDestinationPlugin()
 analytics.add(myDestinationPlugin)
 
-val consentCategoryProvider = MyCmpConsentCategoryProvider(cmpSDK)
+val consentCategoryProvider = MyConsentCategoryProvider(cmpSDK)
 val store = SynchronousStore() // Use only a Synchronous store here!
 
 val consentPlugin = ConsentManagementPlugin(store, consentCategoryProvider)
@@ -207,8 +202,7 @@ otPublishersHeadlessSDK.startSDK(
 
     })
 
-
-//...
+// Helper function
 
     private fun getGroupIds(domainGroupData: JSONObject): List<String> {
         val result: MutableList<String> = ArrayList()
