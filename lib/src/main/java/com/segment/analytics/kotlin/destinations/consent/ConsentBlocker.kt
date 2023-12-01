@@ -5,6 +5,8 @@ import com.segment.analytics.kotlin.core.BaseEvent
 import com.segment.analytics.kotlin.core.Settings
 import com.segment.analytics.kotlin.core.TrackEvent
 import com.segment.analytics.kotlin.core.platform.Plugin
+import com.segment.analytics.kotlin.destinations.consent.Constants.EVENT_SEGMENT_CONSENT_PREFERENCE
+import com.segment.analytics.kotlin.destinations.consent.Constants.SEGMENT_IO_KEY
 import kotlinx.serialization.json.JsonObject
 import sovran.kotlin.SynchronousStore
 
@@ -12,7 +14,7 @@ import sovran.kotlin.SynchronousStore
 internal const val CONSENT_SETTINGS = "consent"
 internal const val CATEGORY_PREFERENCE = "categoryPreference"
 
-class ConsentBlockingPlugin(
+open class ConsentBlocker(
     var destinationKey: String,
     var store: SynchronousStore,
     var allowSegmentPreferenceEvent: Boolean = true
@@ -34,7 +36,7 @@ class ConsentBlockingPlugin(
             requiredConsentCategories.forEach {
                 if (!consentJsonArray.contains(it)) {
 
-                    if (allowSegmentPreferenceEvent && event is TrackEvent && event.event == ConsentManagementPlugin.EVENT_SEGMENT_CONSENT_PREFERENCE) {
+                    if (allowSegmentPreferenceEvent && event is TrackEvent && event.event == EVENT_SEGMENT_CONSENT_PREFERENCE) {
                         // IF event is the SEGMENT CONSENT PREFERENCE event let it through
                         return event
                     } else {
@@ -51,8 +53,8 @@ class ConsentBlockingPlugin(
         return event
     }
 
-    private fun getConsentCategoriesFromEvent(event: BaseEvent): MutableList<String> {
-        val consentJsonArray = mutableListOf<String>()
+    private fun getConsentCategoriesFromEvent(event: BaseEvent): Set<String> {
+        val consentJsonArray = HashSet<String>()
 
         val consentSettingsJson = event.context[CONSENT_SETTINGS]
         if (consentSettingsJson != null) {
@@ -79,3 +81,6 @@ class ConsentBlockingPlugin(
         super.update(settings, type)
     }
 }
+
+
+class SegmentConsentBlocker(store: SynchronousStore): ConsentBlocker(SEGMENT_IO_KEY, store) {}
