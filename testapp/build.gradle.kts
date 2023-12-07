@@ -6,6 +6,8 @@ plugins {
 android {
     compileSdk = 33
 
+    namespace = "com.segment.analytics.destinations.mydestination.testapp"
+
     defaultConfig {
         applicationId = "com.segment.analytics.destinations.mydestination.testapp"
         minSdk = 24
