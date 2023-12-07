@@ -12,6 +12,8 @@ android {
     compileSdk = 33
     buildToolsVersion = "33.0.0"
 
+    namespace = "com.segment.analytics.kotlin.destinations.consent"
+
     defaultConfig {
         multiDexEnabled = true
         minSdk = 24
