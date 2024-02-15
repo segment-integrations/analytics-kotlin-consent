@@ -37,7 +37,7 @@ open class ConsentBlocker(
                 if (!consentJsonArray.contains(it)) {
 
                     if (allowSegmentPreferenceEvent && event is TrackEvent && event.event == EVENT_SEGMENT_CONSENT_PREFERENCE) {
-                        // IF event is the SEGMENT CONSENT PREFERENCE event let it through
+                        // IF event is the EVENT_SEGMENT_CONSENT_PREFERENCE event let it through
                         return event
                     } else {
                         return null

@@ -162,7 +162,7 @@ class ConsentManager(
 
     /**
      * Notify the ConsentManagementPlugin that consent has changed. This will
-     * trigger the Segment Consent Preference event to be fired.
+     * trigger the Segment Consent Preference Updated event to be fired.
      */
     fun notifyConsentChanged() {
         consentChange?.invoke()
