@@ -80,15 +80,15 @@ After
 }
 ```
 
-## Segment Consent Preference Event
+## Segment Consent Preference Updated Event
 
-When notified by the CMP SDK that consent has changed, a track event with name “Segment Consent Preference” will be emitted. Below is example of what that event will look like:
+When notified by the CMP SDK that consent has changed, a track event with name “Segment Consent Preference Updated” will be emitted. Below is example of what that event will look like:
 
 ```json
 {
     "anonymousId": "23adfd82-aa0f-45a7-a756-24f2a7a4c895",
     "type": "track",
-    "event": "Segment Consent Preference",
+    "event": "Segment Consent Preference Updated",
     "userId": "u123",
     "timestamp": "2023-01-01T00:00:00.000Z",
     "context": {
@@ -265,7 +265,7 @@ class OneTrustConsentChangedReceiver(val consentPlugin: ConsentManagementPlugin)
 }
 ```
 
-Here we can see that the OneTrust SDK notifies us of consent change via an Android Intent with the action `OTBroadcastServiceKeys.OT_CONSENT_UPDATED` so our notifier must create a broadcast receiver and listen for this event. One the event is broadcast the reciever will then call `consentPlugin.notifyConsentChanged()` to let the ConsentManagmentPlugin to send the `Segment Consent Preference` event.
+Here we can see that the OneTrust SDK notifies us of consent change via an Android Intent with the action `OTBroadcastServiceKeys.OT_CONSENT_UPDATED` so our notifier must create a broadcast receiver and listen for this event. One the event is broadcast the reciever will then call `consentPlugin.notifyConsentChanged()` to let the ConsentManagmentPlugin to send the `Segment Consent Preference Updated` event.
 
 
 ## License
