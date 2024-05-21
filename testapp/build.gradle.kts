@@ -38,7 +38,8 @@ android {
 
 dependencies {
     implementation(project(mapOf("path" to ":lib")))
-
+    implementation("com.segment:sovran-kotlin:1.3.1")
+    implementation("com.segment.analytics.kotlin:android:1.16.1")
     implementation("androidx.core:core-ktx:1.7.0")
     implementation("androidx.appcompat:appcompat:1.4.1")
     implementation("com.google.android.material:material:1.6.0")

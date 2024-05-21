@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">testApp</string>
+    <string name="send_track_event">Send Track Event</string>
 </resources>
