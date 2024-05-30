@@ -7,11 +7,12 @@ import sovran.kotlin.State
 class ConsentState(
     var destinationCategoryMap: Map<String, Array<String>>,
     var hasUnmappedDestinations: Boolean,
+    var allCategories: List<String>,
     var enabledAtSegment: Boolean
 ) : State {
 
     companion object {
-        val defaultState = ConsentState(mutableMapOf(), true, true)
+        val defaultState = ConsentState(mutableMapOf(), true, mutableListOf(),true)
     }
 }
 
@@ -20,7 +21,7 @@ class UpdateConsentStateActionFull(var value: ConsentState) : Action<ConsentStat
 
         // New state override any old state.
         val newState = ConsentState(
-            value.destinationCategoryMap, value.hasUnmappedDestinations, value.enabledAtSegment
+            value.destinationCategoryMap, value.hasUnmappedDestinations, value.allCategories, value.enabledAtSegment
         )
 
         return newState
@@ -29,7 +30,7 @@ class UpdateConsentStateActionFull(var value: ConsentState) : Action<ConsentStat
 
 class UpdateConsentStateActionMappings(var mappings: Map<String, Array<String>>) : Action<ConsentState> {
     override fun reduce(state: ConsentState): ConsentState {
-        val newState = ConsentState(mappings, state.hasUnmappedDestinations, state.enabledAtSegment)
+        val newState = ConsentState(mappings, state.hasUnmappedDestinations, state.allCategories, state.enabledAtSegment)
         return newState
     }
 }
@@ -39,7 +40,7 @@ class UpdateConsentStateActionHasUnmappedDestinations(var hasUnmappedDestination
 
         // New state override any old state.
         val newState = ConsentState(
-            state.destinationCategoryMap, hasUnmappedDestinations, state.enabledAtSegment
+            state.destinationCategoryMap, hasUnmappedDestinations, state.allCategories, state.enabledAtSegment
         )
 
         return newState
@@ -51,7 +52,7 @@ class UpdateConsentStateActionEnabledAtSegment(var enabledAtSegment: Boolean) : 
 
         // New state override any old state.
         val newState = ConsentState(
-            state.destinationCategoryMap, state.hasUnmappedDestinations, enabledAtSegment
+            state.destinationCategoryMap, state.hasUnmappedDestinations, state.allCategories, enabledAtSegment
         )
 
         return newState

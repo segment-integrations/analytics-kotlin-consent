@@ -9,10 +9,10 @@ import com.segment.analytics.kotlin.destinations.consent.Constants.EVENT_SEGMENT
 import com.segment.analytics.kotlin.destinations.consent.Constants.SEGMENT_IO_KEY
 import kotlinx.serialization.json.JsonObject
 import sovran.kotlin.SynchronousStore
+import com.segment.analytics.kotlin.destinations.consent.Constants.CATEGORY_PREFERENCE_KEY
+import com.segment.analytics.kotlin.destinations.consent.Constants.CONSENT_KEY
 
 
-internal const val CONSENT_SETTINGS = "consent"
-internal const val CATEGORY_PREFERENCE = "categoryPreference"
 
 open class ConsentBlocker(
     var destinationKey: String,
@@ -30,7 +30,7 @@ open class ConsentBlocker(
 
         if (requiredConsentCategories != null && requiredConsentCategories.isNotEmpty()) {
 
-            val consentJsonArray = getConsentCategoriesFromEvent(event)
+            val consentJsonArray = getConsentedCategoriesFromEvent(event)
 
             // Look for a missing consent category
             requiredConsentCategories.forEach {
@@ -53,13 +53,17 @@ open class ConsentBlocker(
         return event
     }
 
-    private fun getConsentCategoriesFromEvent(event: BaseEvent): Set<String> {
+    /**
+     * Returns the set of consented categories in the event. Only categories with set to 'true'
+     * will be returned.
+     */
+    internal fun getConsentedCategoriesFromEvent(event: BaseEvent): Set<String> {
         val consentJsonArray = HashSet<String>()
 
-        val consentSettingsJson = event.context[CONSENT_SETTINGS]
+        val consentSettingsJson = event.context[CONSENT_KEY]
         if (consentSettingsJson != null) {
             val consentJsonObject = (consentSettingsJson as JsonObject)
-            val categoryPreferenceJson = consentJsonObject[CATEGORY_PREFERENCE]
+            val categoryPreferenceJson = consentJsonObject[CATEGORY_PREFERENCE_KEY]
             if (categoryPreferenceJson != null) {
                 val categoryPreferenceJsonObject = categoryPreferenceJson as JsonObject
                 categoryPreferenceJsonObject.forEach { category, consentGiven ->
@@ -83,4 +87,22 @@ open class ConsentBlocker(
 }
 
 
-class SegmentConsentBlocker(store: SynchronousStore): ConsentBlocker(SEGMENT_IO_KEY, store) {}
+class SegmentConsentBlocker(store: SynchronousStore): ConsentBlocker(SEGMENT_IO_KEY, store) {
+    override fun execute(event: BaseEvent): BaseEvent? {
+
+        val currentState = store.currentState(ConsentState::class)
+        val hasUnmappedDestinations = currentState?.hasUnmappedDestinations
+
+        // IF we have no unmapped destinations and we have not consented to any categories block (drop)
+        // the event.
+        if (hasUnmappedDestinations == false) {
+            val consentedCategoriesSet = getConsentedCategoriesFromEvent(event)
+            if (consentedCategoriesSet.isEmpty()) {
+                // Drop the event
+                return null
+            }
+        }
+
+        return event
+    }
+}

@@ -8,6 +8,7 @@ import com.segment.analytics.kotlin.core.platform.Plugin
 import com.segment.analytics.kotlin.core.utilities.getBoolean
 import com.segment.analytics.kotlin.core.utilities.safeJsonObject
 import com.segment.analytics.kotlin.core.utilities.toJsonElement
+import com.segment.analytics.kotlin.destinations.consent.Constants.ALL_CATEGORIES_KEY
 import com.segment.analytics.kotlin.destinations.consent.Constants.CATEGORIES_KEY
 import com.segment.analytics.kotlin.destinations.consent.Constants.CATEGORY_PREFERENCE_KEY
 import com.segment.analytics.kotlin.destinations.consent.Constants.CONSENT_KEY
@@ -88,6 +89,7 @@ class ConsentManager(
 
         val destinationMapping = mutableMapOf<String, Array<String>>()
         var hasUnmappedDestinations = true
+        val allCategories = mutableListOf<String>()
         var enabledAtSegment = true
 
         // Add all mappings
@@ -110,8 +112,13 @@ class ConsentManager(
                 it.jsonObject.getBoolean(HAS_UNMAPPED_DESTINATIONS_KEY)
                     ?.let { serverHasUnmappedDestinations ->
                         println("hasUnmappedDestinations jsonElement: $serverHasUnmappedDestinations")
-                        hasUnmappedDestinations = serverHasUnmappedDestinations == true
+                        hasUnmappedDestinations = serverHasUnmappedDestinations
                     }
+
+                val allCategoriesJson = it.jsonObject.get(ALL_CATEGORIES_KEY)
+                allCategoriesJson?.let {
+                    it.jsonObject.values.forEach { jsonElement ->  allCategories.add(jsonElement.toString())}
+                }
             }
         } catch (t: Throwable) {
             println("Couldn't parse settings object to check for 'hasUnmappedDestinations'")
@@ -126,7 +133,7 @@ class ConsentManager(
             println("Couldn't parse settings object to check if 'enabledAtSegment'.")
         }
 
-        return ConsentState(destinationMapping, hasUnmappedDestinations, enabledAtSegment)
+        return ConsentState(destinationMapping, hasUnmappedDestinations, allCategories, enabledAtSegment)
     }
 
     override fun execute(event: BaseEvent): BaseEvent? {
