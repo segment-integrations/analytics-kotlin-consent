@@ -19,15 +19,15 @@ class ConsentBlockerTests {
         store.provide(ConsentState.defaultState)
         var mappings: MutableMap<String, Array<String>> = HashMap()
         mappings["foo"] = arrayOf("cat1", "cat2")
-        val state = ConsentState(mappings, false, true)
+        val state = ConsentState(mappings, false, mutableListOf<String>(),true)
         store.dispatch(UpdateConsentStateActionFull(state), ConsentState::class)
         val blockingPlugin = ConsentBlocker("foo", store)
 
         // All categories correct
         var stampedEvent = TrackEvent(properties = emptyJsonObject, event = "MyEvent")
         stampedEvent.context = buildJsonObject {
-            put(CONSENT_SETTINGS, buildJsonObject {
-                put(CATEGORY_PREFERENCE, buildJsonObject {
+            put(Constants.CONSENT_KEY, buildJsonObject {
+                put(Constants.CATEGORY_PREFERENCE_KEY, buildJsonObject {
                     put("cat1", JsonPrimitive(true))
                     put("cat2", JsonPrimitive(true))
                 })
@@ -38,8 +38,8 @@ class ConsentBlockerTests {
 
         stampedEvent = TrackEvent(properties = emptyJsonObject, event = "MyEvent")
         stampedEvent.context = buildJsonObject {
-            put(CONSENT_SETTINGS, buildJsonObject {
-                put(CATEGORY_PREFERENCE, buildJsonObject {
+            put(Constants.CONSENT_KEY, buildJsonObject {
+                put(Constants.CATEGORY_PREFERENCE_KEY, buildJsonObject {
                     put("cat1", JsonPrimitive(true))
                     put("cat2", JsonPrimitive(true))
                     put("cat3", JsonPrimitive(true))
@@ -56,7 +56,7 @@ class ConsentBlockerTests {
         store.provide(ConsentState.defaultState)
         var mappings: MutableMap<String, Array<String>> = HashMap()
         mappings["foo"] = arrayOf("cat1", "cat2")
-        val state = ConsentState(mappings, false, true)
+        val state = ConsentState(mappings, false, mutableListOf<String>(),true)
         store.dispatch(UpdateConsentStateActionFull(state), ConsentState::class)
         val blockingPlugin = ConsentBlocker("foo", store)
 
@@ -68,7 +68,7 @@ class ConsentBlockerTests {
 
         // Context with empty consentSettings
         unstamppedEvent.context = buildJsonObject {
-            put(CONSENT_SETTINGS, emptyJsonObject)
+            put(Constants.CONSENT_KEY, emptyJsonObject)
         }
         processedEvent = blockingPlugin.execute(unstamppedEvent)
         assertNull(processedEvent)
@@ -76,8 +76,8 @@ class ConsentBlockerTests {
         // Stamped Event with all categories false
         var stamppedEvent = TrackEvent(properties = emptyJsonObject, event = "MyEvent")
         stamppedEvent.context = buildJsonObject {
-            put(CONSENT_SETTINGS, buildJsonObject {
-                put(CATEGORY_PREFERENCE, buildJsonObject {
+            put(Constants.CONSENT_KEY, buildJsonObject {
+                put(Constants.CATEGORY_PREFERENCE_KEY, buildJsonObject {
                     put("cat1", JsonPrimitive(false))
                     put("cat2", JsonPrimitive(false))
                 })
@@ -101,8 +101,8 @@ class ConsentBlockerTests {
 
         var stamppedEvent = TrackEvent(properties = emptyJsonObject, event = "MyEvent")
         stamppedEvent.context = buildJsonObject {
-            put(CONSENT_SETTINGS, buildJsonObject {
-                put(CATEGORY_PREFERENCE, buildJsonObject {
+            put(Constants.CONSENT_KEY, buildJsonObject {
+                put(Constants.CATEGORY_PREFERENCE_KEY, buildJsonObject {
                     put("cat1", JsonPrimitive(false))
                     put("cat2", JsonPrimitive(false))
                 })

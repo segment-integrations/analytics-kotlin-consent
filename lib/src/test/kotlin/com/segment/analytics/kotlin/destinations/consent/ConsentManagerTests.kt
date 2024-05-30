@@ -15,9 +15,11 @@ import io.mockk.mockkStatic
 import io.mockk.spyk
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonArray
 import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.jsonObject
 import org.junit.Before
 import org.junit.jupiter.api.Assertions.*
 import org.junit.Test
@@ -35,6 +37,25 @@ class ConsentManagerTests {
 
     private val testDispatcher = UnconfinedTestDispatcher()
     private val testScope = TestScope(testDispatcher)
+
+    fun createConsentEvent(name: String, consentMap: Map<String, Boolean>, properties: Properties = emptyJsonObject, context: AnalyticsContext = emptyJsonObject): BaseEvent {
+        var event = TrackEvent(properties, name)
+        event.context = buildJsonObject {
+            // Add all context items
+            context.forEach { prop, elem -> put(prop, elem) }
+
+            // Add (potentially overriding from context) the consentMap values
+            put(Constants.CONSENT_KEY, buildJsonObject {
+                put(Constants.CATEGORY_PREFERENCE_KEY, buildJsonObject {
+                    consentMap.forEach { category, isConsented ->
+                        put(category, JsonPrimitive(isConsented))
+                    }
+                })
+            })
+        }
+
+        return event
+    }
 
     @Before
     fun setUp() {
@@ -78,12 +99,13 @@ class ConsentManagerTests {
         val consentManager = ConsentManager(store, cp)
         consentManager.start()
 
+        // Refactor
         var event = TrackEvent(emptyJsonObject, "MyEvent")
         event.context = emptyJsonObject
 
         val expectedContext = buildJsonObject {
-            put(CONSENT_SETTINGS, buildJsonObject {
-                put(CATEGORY_PREFERENCE, buildJsonObject {
+            put(Constants.CONSENT_KEY, buildJsonObject {
+                put(Constants.CATEGORY_PREFERENCE_KEY, buildJsonObject {
                     put("cat1", JsonPrimitive(true))
                     put("cat2", JsonPrimitive(false))
                 })
@@ -130,15 +152,15 @@ class ConsentManagerTests {
         val integrations = buildJsonObject {
             put(KEY_SEGMENTIO, buildJsonObject {
                 put("apiKey", JsonPrimitive("foo"))
-                put("consentSettings", buildJsonObject {
-                    put("categories", buildJsonArray { "foo" })
+                put(Constants.CONSENT_SETTINGS_KEY, buildJsonObject {
+                    put(Constants.CATEGORIES_KEY, buildJsonArray { "foo" })
                 })
             })
 
             put(KEY_TEST_DESTINATION, buildJsonObject {
                 put("apiKey", JsonPrimitive("foo"))
-                put("consentSettings", buildJsonObject {
-                    put("categories", buildJsonArray { "foo" })
+                put(Constants.CONSENT_SETTINGS_KEY, buildJsonObject {
+                    put(Constants.CATEGORIES_KEY, buildJsonArray { "foo" })
                 })
             })
         }
@@ -147,7 +169,14 @@ class ConsentManagerTests {
             integrations = integrations,
             plan = buildJsonObject { put("foo", JsonPrimitive("bar")) },
             middlewareSettings = buildJsonObject { put("foo", JsonPrimitive("bar")) },
-            edgeFunction = buildJsonObject { put("foo", JsonPrimitive("bar")) }
+            edgeFunction = buildJsonObject { put("foo", JsonPrimitive("bar")) },
+            consentSettings = buildJsonObject {
+                put(Constants.ALL_CATEGORIES_KEY, buildJsonArray {
+                    add(JsonPrimitive("foo"))
+                })
+
+                put(Constants.HAS_UNMAPPED_DESTINATIONS_KEY, JsonPrimitive(false))
+            }
         )
 
         consentManager.update(settings, Plugin.UpdateType.Refresh)
@@ -166,4 +195,55 @@ class ConsentManagerTests {
         assertEquals(1, testConsentBlockers?.size)
     }
 
+    @Test
+    fun `SegmentConsentBlocker does not block when we have unmapped destinations and no consent rule`() {
+        val store = SynchronousStore()
+
+        // We _have_ unmapped destinations and there are no rules for the for the segment destination
+        // so we should ALLOW the event to proceed.
+        store.provide(ConsentState(mutableMapOf(), true, mutableListOf(),true))
+        var event = createConsentEvent("MyConsentEvent", mapOf( "foo" to false))
+        var segmentBlocker = SegmentConsentBlocker(store)
+        var resultingEvent = segmentBlocker.execute(event)
+        assertNotNull(resultingEvent)
+    }
+
+    @Test
+    fun `SegmentConsentBlocker blocks when we have no unmapped destinations and event has no consent`() {
+        val store = SynchronousStore()
+
+        // We have NO unmapped destinations and there are no rules for the for the segment destination
+        // so we should BLOCK the event to proceed.
+        store.provide(ConsentState(mutableMapOf(), false, mutableListOf(),true))
+        var event = createConsentEvent("MyConsentEvent", mapOf( "foo" to false))
+        var segmentBlocker = SegmentConsentBlocker(store)
+        var resultingEvent = segmentBlocker.execute(event)
+        assertNull(resultingEvent)
+    }
+
+    @Test
+    fun `SegmentConsentBlocker blocks when event missing required consent`() {
+        val store = SynchronousStore()
+
+        // We _have_ unmapped destinations but there are required consent categories for the
+        // segment destination so we should BLOCK the event to proceed.
+        store.provide(ConsentState(mutableMapOf("Segment.io" to arrayOf("foo")), false, mutableListOf(),true))
+        var event = createConsentEvent("MyConsentEvent", mapOf( "foo" to false))
+        var segmentBlocker = SegmentConsentBlocker(store)
+        var resultingEvent = segmentBlocker.execute(event)
+        assertNull(resultingEvent)
+    }
+
+    @Test
+    fun `SegmentConsentBlocker does not block when event has required consent`() {
+        val store = SynchronousStore()
+
+        // We _have_ unmapped destinations but there are required consent categories for the
+        // segment destination so we should BLOCK the event to proceed.
+        store.provide(ConsentState(mutableMapOf("Segment.io" to arrayOf("foo")), false, mutableListOf(),true))
+        var event = createConsentEvent("MyConsentEvent", mapOf( "foo" to true))
+        var segmentBlocker = SegmentConsentBlocker(store)
+        var resultingEvent = segmentBlocker.execute(event)
+        assertNotNull(resultingEvent)
+    }
 }
