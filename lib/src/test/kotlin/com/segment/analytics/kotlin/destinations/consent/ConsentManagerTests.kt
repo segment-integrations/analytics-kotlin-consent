@@ -11,8 +11,10 @@ import com.segment.analytics.kotlin.core.platform.Plugin
 import com.segment.analytics.kotlin.core.utilities.LenientJson
 import com.segment.analytics.kotlin.core.utilities.toJsonElement
 import io.mockk.every
+import io.mockk.mockk
 import io.mockk.mockkStatic
 import io.mockk.spyk
+import io.mockk.verify
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.serialization.json.JsonElement
@@ -245,5 +247,43 @@ class ConsentManagerTests {
         var segmentBlocker = SegmentConsentBlocker(store)
         var resultingEvent = segmentBlocker.execute(event)
         assertNotNull(resultingEvent)
+    }
+
+    @Test
+    fun `ConsentManager calls ConsentCategoryProvider_setCategories() when update() is called`() {
+        val store = SynchronousStore()
+        store.provide(ConsentState.defaultState)
+        store.provide(
+            ConsentState(
+                mutableMapOf(),
+                true,
+                mutableListOf("foo"),
+                true)
+        )
+
+        val cp = mockk<ConsentCategoryProvider>()
+        every { cp.getCategories() } returns mapOf()
+        every { cp.setCategoryList(any())} returns Unit
+
+        val consentManager = ConsentManager(store, cp)
+
+        val settings = Settings(
+            integrations = emptyJsonObject,
+            plan = buildJsonObject { put("foo", JsonPrimitive("bar")) },
+            middlewareSettings = buildJsonObject { put("foo", JsonPrimitive("bar")) },
+            edgeFunction = buildJsonObject { put("foo", JsonPrimitive("bar")) },
+            consentSettings = buildJsonObject {
+                put(Constants.ALL_CATEGORIES_KEY, buildJsonArray {
+                    add(JsonPrimitive("foo"))
+                })
+                put(Constants.HAS_UNMAPPED_DESTINATIONS_KEY, JsonPrimitive(false))
+            }
+        )
+
+        consentManager.setup(analytics)
+        consentManager.update(settings, Plugin.UpdateType.Initial)
+
+        // Make sure we called setCategories was called.
+        verify { cp.setCategoryList(listOf("foo")) }
     }
 }
