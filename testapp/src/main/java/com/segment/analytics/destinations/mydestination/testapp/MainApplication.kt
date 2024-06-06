@@ -54,6 +54,7 @@ class MainApplication: Application() {
         val consentPlugin = ConsentManager(store, consentCategoryProvider)
 
         analytics.add(consentPlugin)
+        consentPlugin.start()
     }
 
 

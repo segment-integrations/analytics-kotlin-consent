@@ -16,8 +16,10 @@ import com.segment.analytics.kotlin.destinations.consent.Constants.CONSENT_SETTI
 import com.segment.analytics.kotlin.destinations.consent.Constants.EVENT_SEGMENT_CONSENT_PREFERENCE
 import com.segment.analytics.kotlin.destinations.consent.Constants.HAS_UNMAPPED_DESTINATIONS_KEY
 import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import sovran.kotlin.SynchronousStore
 import java.util.*
@@ -83,6 +85,9 @@ class ConsentManager(
             }
         }
 
+        // Add the list of categories to the Consent Category Provider so it knows which
+        // categories we care about.
+        this.consentProvider.setCategoryList(state.allCategories)
     }
 
     private fun consentStateFrom(settings: Settings): ConsentState {
@@ -106,9 +111,9 @@ class ConsentManager(
             }
         }
 
-        // Set hasUnmappedDestinations
+        // Set hasUnmappedDestinations and allCategories
         try {
-            settings.toJsonElement().jsonObject.get(CONSENT_SETTINGS_KEY)?.let {
+            settings.consentSettings.let {
                 it.jsonObject.getBoolean(HAS_UNMAPPED_DESTINATIONS_KEY)
                     ?.let { serverHasUnmappedDestinations ->
                         println("hasUnmappedDestinations jsonElement: $serverHasUnmappedDestinations")
@@ -117,7 +122,13 @@ class ConsentManager(
 
                 val allCategoriesJson = it.jsonObject.get(ALL_CATEGORIES_KEY)
                 allCategoriesJson?.let {
-                    it.jsonObject.values.forEach { jsonElement ->  allCategories.add(jsonElement.toString())}
+
+
+                    it.jsonArray.forEach { jsonElement ->
+
+                        if (jsonElement is JsonElement && jsonElement is JsonPrimitive) {
+                            allCategories.add(jsonElement.content)}
+                        }
                 }
             }
         } catch (t: Throwable) {
