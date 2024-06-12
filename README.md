@@ -3,6 +3,38 @@
 This plugin provides the framework to integration Consent Management Platform (CMP) SDKs like OneTrust to supply consent status and potential block events going to device mode destinations.
 
 
+## Getting Started
+
+Add the consent denpendency (which has recently changed):
+
+```kotlin
+  implementation("com.segment.analytics.kotlin:consent:<version>")
+```
+
+Then add the ConsentManager Plugin to your analytics:
+
+```kotlin
+  import sovran.kotlin.SynchronousStore
+  import com.segment.analytics.kotlin.consent.ConsentManager
+
+  // ...
+
+  val consentCategoryProvider = OneTrustConsentCategoryProvider(otPublishersHeadlessSDK)
+  val store = SynchronousStore() // import from
+
+  val consentPlugin = ConsentManager(store, consentCategoryProvider)
+
+  analytics.add(consentPlugin)
+
+  // Call this to start event flow.
+  // NOTE: You might want to wait until CMP is ready before called start()
+  // See the sample app in the koltin-consent-onetrust repo here:
+  // https://github.com/segment-integrations/analytics-kotlin-consent-onetrust/blob/main/testapp/src/main/java/com/segment/analytics/destinations/mydestination/testapp/MainApplication.kt
+  consentPlugin.start()
+```
+
+
+
 ## Background
 
 Consent Management is the management of a user’s consent preferences related to privacy.  You might be familiar with the Privacy Pop-ups that have become mandated recently that ask the user if he or she consents to the use of certain category of cookies:
