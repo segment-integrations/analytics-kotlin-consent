@@ -19,17 +19,18 @@ Then add the ConsentManager Plugin to your analytics:
 
   // ...
 
-  val consentCategoryProvider = OneTrustConsentCategoryProvider(otPublishersHeadlessSDK)
-  val store = SynchronousStore() // import from
+  // Create the category Provider for your CMP
+  val consentCategoryProvider = MyCmpConsentCategoryProvider(myCmpInstance)
+  val store = SynchronousStore()
 
   val consentPlugin = ConsentManager(store, consentCategoryProvider)
 
   analytics.add(consentPlugin)
 
   // Call this to start event flow.
-  // NOTE: You might want to wait until CMP is ready before called start()
-  // See the sample app in the koltin-consent-onetrust repo here:
-  // https://github.com/segment-integrations/analytics-kotlin-consent-onetrust/blob/main/testapp/src/main/java/com/segment/analytics/destinations/mydestination/testapp/MainApplication.kt
+  // NOTE: You might want to wait until CMP is ready before you call start()
+  //       so that events are held until the CMP is ready to provide the
+  //       current consent status.
   consentPlugin.start()
 ```
 
