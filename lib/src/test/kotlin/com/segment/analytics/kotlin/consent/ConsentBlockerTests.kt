@@ -1,5 +1,9 @@
-package com.segment.analytics.kotlin.destinations.consent
+package com.segment.analytics.kotlin.consent
 
+import com.segment.analytics.kotlin.consent.ConsentBlocker
+import com.segment.analytics.kotlin.consent.ConsentState
+import com.segment.analytics.kotlin.consent.Constants
+import com.segment.analytics.kotlin.consent.UpdateConsentStateActionFull
 import com.segment.analytics.kotlin.core.TrackEvent
 import com.segment.analytics.kotlin.core.emptyJsonObject
 import kotlinx.serialization.json.JsonPrimitive

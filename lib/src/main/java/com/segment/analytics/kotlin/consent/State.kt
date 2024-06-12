@@ -1,4 +1,4 @@
-package com.segment.analytics.kotlin.destinations.consent
+package com.segment.analytics.kotlin.consent
 
 import sovran.kotlin.Action
 import sovran.kotlin.State

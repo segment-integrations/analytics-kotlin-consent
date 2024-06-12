@@ -1,4 +1,4 @@
-package com.segment.analytics.kotlin.destinations.consent
+package com.segment.analytics.kotlin.consent
 
 import com.segment.analytics.kotlin.core.Analytics
 import com.segment.analytics.kotlin.core.BaseEvent
@@ -8,13 +8,13 @@ import com.segment.analytics.kotlin.core.platform.Plugin
 import com.segment.analytics.kotlin.core.utilities.getBoolean
 import com.segment.analytics.kotlin.core.utilities.safeJsonObject
 import com.segment.analytics.kotlin.core.utilities.toJsonElement
-import com.segment.analytics.kotlin.destinations.consent.Constants.ALL_CATEGORIES_KEY
-import com.segment.analytics.kotlin.destinations.consent.Constants.CATEGORIES_KEY
-import com.segment.analytics.kotlin.destinations.consent.Constants.CATEGORY_PREFERENCE_KEY
-import com.segment.analytics.kotlin.destinations.consent.Constants.CONSENT_KEY
-import com.segment.analytics.kotlin.destinations.consent.Constants.CONSENT_SETTINGS_KEY
-import com.segment.analytics.kotlin.destinations.consent.Constants.EVENT_SEGMENT_CONSENT_PREFERENCE
-import com.segment.analytics.kotlin.destinations.consent.Constants.HAS_UNMAPPED_DESTINATIONS_KEY
+import com.segment.analytics.kotlin.consent.Constants.ALL_CATEGORIES_KEY
+import com.segment.analytics.kotlin.consent.Constants.CATEGORIES_KEY
+import com.segment.analytics.kotlin.consent.Constants.CATEGORY_PREFERENCE_KEY
+import com.segment.analytics.kotlin.consent.Constants.CONSENT_KEY
+import com.segment.analytics.kotlin.consent.Constants.CONSENT_SETTINGS_KEY
+import com.segment.analytics.kotlin.consent.Constants.EVENT_SEGMENT_CONSENT_PREFERENCE
+import com.segment.analytics.kotlin.consent.Constants.HAS_UNMAPPED_DESTINATIONS_KEY
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonPrimitive
