@@ -1,4 +1,4 @@
-package com.segment.analytics.kotlin.destinations.consent
+package com.segment.analytics.kotlin.consent
 
 import android.content.SharedPreferences
 import androidx.annotation.Nullable

@@ -1,4 +1,4 @@
-package com.segment.analytics.kotlin.destinations.consent
+package com.segment.analytics.kotlin.consent
 object Constants {
     const val EVENT_SEGMENT_CONSENT_PREFERENCE = "Segment Consent Preference Updated"
     const val CONSENT_SETTINGS_KEY = "consentSettings"

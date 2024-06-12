@@ -1,4 +1,4 @@
-package com.segment.analytics.kotlin.destinations.consent
+package com.segment.analytics.kotlin.consent
 
 /**
  * This interface fronts a module that would like to provide

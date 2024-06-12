@@ -1,16 +1,16 @@
-package com.segment.analytics.kotlin.destinations.consent
+package com.segment.analytics.kotlin.consent
 
 import com.segment.analytics.kotlin.core.Analytics
 import com.segment.analytics.kotlin.core.BaseEvent
 import com.segment.analytics.kotlin.core.Settings
 import com.segment.analytics.kotlin.core.TrackEvent
 import com.segment.analytics.kotlin.core.platform.Plugin
-import com.segment.analytics.kotlin.destinations.consent.Constants.EVENT_SEGMENT_CONSENT_PREFERENCE
-import com.segment.analytics.kotlin.destinations.consent.Constants.SEGMENT_IO_KEY
+import com.segment.analytics.kotlin.consent.Constants.EVENT_SEGMENT_CONSENT_PREFERENCE
+import com.segment.analytics.kotlin.consent.Constants.SEGMENT_IO_KEY
 import kotlinx.serialization.json.JsonObject
 import sovran.kotlin.SynchronousStore
-import com.segment.analytics.kotlin.destinations.consent.Constants.CATEGORY_PREFERENCE_KEY
-import com.segment.analytics.kotlin.destinations.consent.Constants.CONSENT_KEY
+import com.segment.analytics.kotlin.consent.Constants.CATEGORY_PREFERENCE_KEY
+import com.segment.analytics.kotlin.consent.Constants.CONSENT_KEY
 
 
 

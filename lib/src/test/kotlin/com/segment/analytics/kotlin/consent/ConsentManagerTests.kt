@@ -1,10 +1,16 @@
-package com.segment.analytics.kotlin.destinations.consent
+package com.segment.analytics.kotlin.consent
 
 import android.content.Context
 import android.content.SharedPreferences
 import androidx.test.platform.app.InstrumentationRegistry
 import com.segment.analytics.kotlin.android.AndroidStorageProvider
 import com.segment.analytics.kotlin.android.plugins.getUniqueID
+import com.segment.analytics.kotlin.consent.ConsentBlocker
+import com.segment.analytics.kotlin.consent.ConsentCategoryProvider
+import com.segment.analytics.kotlin.consent.ConsentManager
+import com.segment.analytics.kotlin.consent.ConsentState
+import com.segment.analytics.kotlin.consent.Constants
+import com.segment.analytics.kotlin.consent.SegmentConsentBlocker
 import com.segment.analytics.kotlin.core.*
 import com.segment.analytics.kotlin.core.platform.DestinationPlugin
 import com.segment.analytics.kotlin.core.platform.Plugin

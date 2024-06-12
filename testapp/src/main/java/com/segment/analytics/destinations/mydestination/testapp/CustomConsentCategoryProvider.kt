@@ -1,6 +1,6 @@
 package com.segment.analytics.destinations.mydestination.testapp
 
-import com.segment.analytics.kotlin.destinations.consent.ConsentCategoryProvider
+import com.segment.analytics.kotlin.consent.ConsentCategoryProvider
 
 /**
  * A toy implementation of a ConsentCategoryProvider. Normally, an implementation would
