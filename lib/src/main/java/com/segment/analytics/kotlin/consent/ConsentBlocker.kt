@@ -94,8 +94,8 @@ class SegmentConsentBlocker(store: SynchronousStore): ConsentBlocker(SEGMENT_IO_
         val hasUnmappedDestinations = currentState?.hasUnmappedDestinations
 
         // IF we have no unmapped destinations and we have not consented to any categories block (drop)
-        // the event.
-        if (hasUnmappedDestinations == false) {
+        // the event unless it is the Segment Consent Preference Event
+        if (hasUnmappedDestinations == false && (event as? TrackEvent)?.event != EVENT_SEGMENT_CONSENT_PREFERENCE ) {
             val consentedCategoriesSet = getConsentedCategoriesFromEvent(event)
             if (consentedCategoriesSet.isEmpty()) {
                 // Drop the event
