@@ -92,6 +92,54 @@ class ConsentBlockerTests {
     }
 
     @Test
+    fun `blocks when no consent and no unmapped destinations`() {
+        val store = SynchronousStore()
+        store.provide(ConsentState.defaultState)
+        var mappings: MutableMap<String, Array<String>> = HashMap()
+        mappings["foo"] = arrayOf("cat1", "cat2")
+        val state = ConsentState(mappings, false, mutableListOf<String>(),true)
+        store.dispatch(UpdateConsentStateActionFull(state), ConsentState::class)
+        val blockingPlugin = ConsentBlocker("foo", store)
+
+        // Stamped Event with all categories false
+        var stamppedEvent = TrackEvent(properties = emptyJsonObject, event = "MyEvent")
+        stamppedEvent.context = buildJsonObject {
+            put(Constants.CONSENT_KEY, buildJsonObject {
+                put(Constants.CATEGORY_PREFERENCE_KEY, buildJsonObject {
+                    put("cat1", JsonPrimitive(false))
+                    put("cat2", JsonPrimitive(false))
+                })
+            })
+        }
+        val processedEvent = blockingPlugin.execute(stamppedEvent)
+        assertNull(processedEvent)
+    }
+
+    @Test
+    fun `does not block the Segment Consent Preference event`() {
+        val store = SynchronousStore()
+        store.provide(ConsentState.defaultState)
+        var mappings: MutableMap<String, Array<String>> = HashMap()
+        mappings["foo"] = arrayOf("cat1", "cat2")
+        val state = ConsentState(mappings, false, mutableListOf<String>(),true)
+        store.dispatch(UpdateConsentStateActionFull(state), ConsentState::class)
+        val blockingPlugin = ConsentBlocker("foo", store)
+
+        // Stamped Event with all categories false
+        var stamppedEvent = TrackEvent(properties = emptyJsonObject, event = Constants.EVENT_SEGMENT_CONSENT_PREFERENCE)
+        stamppedEvent.context = buildJsonObject {
+            put(Constants.CONSENT_KEY, buildJsonObject {
+                put(Constants.CATEGORY_PREFERENCE_KEY, buildJsonObject {
+                    put("cat1", JsonPrimitive(false))
+                    put("cat2", JsonPrimitive(false))
+                })
+            })
+        }
+        val processedEvent = blockingPlugin.execute(stamppedEvent)
+        assertNotNull(processedEvent)
+    }
+
+    @Test
     fun `block when nothing in store`() {
         val store = SynchronousStore()
         store.provide(ConsentState.defaultState)
