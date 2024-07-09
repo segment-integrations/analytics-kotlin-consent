@@ -38,6 +38,10 @@ android {
     kotlinOptions {
         jvmTarget = "1.8"
     }
+
+    tasks.withType<Javadoc>().configureEach {
+        enabled = false
+    }
 }
 
 dependencies {
