@@ -97,8 +97,8 @@ class ConsentManager(
         val allCategories = mutableListOf<String>()
         var enabledAtSegment = true
 
-        // Add all mappings
-        settings.integrations.forEach { integrationName, integrationJson ->
+
+        for ((integrationName, integrationJson) in settings.integrations) {
             // If the integration has the consent key:
             integrationJson.jsonObject[CONSENT_SETTINGS_KEY]?.let {
 
@@ -164,7 +164,7 @@ class ConsentManager(
      */
     private fun stampEvent(event: BaseEvent) {
         event.context = buildJsonObject {
-            event.context.forEach { key, json ->
+            for ((key, json) in event.context) {
                 put(key, json)
             }
             put(CONSENT_KEY, buildJsonObject {

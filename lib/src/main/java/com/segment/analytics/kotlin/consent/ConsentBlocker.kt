@@ -66,7 +66,7 @@ open class ConsentBlocker(
             val categoryPreferenceJson = consentJsonObject[CATEGORY_PREFERENCE_KEY]
             if (categoryPreferenceJson != null) {
                 val categoryPreferenceJsonObject = categoryPreferenceJson as JsonObject
-                categoryPreferenceJsonObject.forEach { category, consentGiven ->
+                for ((category, consentGiven) in categoryPreferenceJsonObject) {
                     if (consentGiven.toString() == "true") {
                         // Add this category to the list of necessary categories
                         consentJsonArray.add(category)
