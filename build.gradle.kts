@@ -38,7 +38,6 @@ allprojects {
 
 nexusPublishing {
     repositories {
-        sonatype()
         sonatype {
             // New Portal OSSRH Staging API endpoints
             nexusUrl.set(uri("https://ossrh-staging-api.central.sonatype.com/service/local/"))
