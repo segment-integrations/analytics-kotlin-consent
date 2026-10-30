@@ -26,6 +26,11 @@ open class ConsentBlocker(
     override fun execute(event: BaseEvent): BaseEvent? {
         val currentState = store.currentState(ConsentState::class)
 
+        // Consent Management isn't enabled in the Segment workspace, so don't block anything.
+        if (currentState?.enabledAtSegment != true) {
+            return event
+        }
+
         val requiredConsentCategories = currentState?.destinationCategoryMap?.get(destinationKey)
 
         if (requiredConsentCategories != null && requiredConsentCategories.isNotEmpty()) {
@@ -91,6 +96,12 @@ class SegmentConsentBlocker(store: SynchronousStore): ConsentBlocker(SEGMENT_IO_
     override fun execute(event: BaseEvent): BaseEvent? {
 
         val currentState = store.currentState(ConsentState::class)
+
+        // Consent Management isn't enabled in the Segment workspace, so don't block anything.
+        if (currentState?.enabledAtSegment != true) {
+            return event
+        }
+
         val hasUnmappedDestinations = currentState?.hasUnmappedDestinations
 
         // IF we have no unmapped destinations and we have not consented to any categories block (drop)
