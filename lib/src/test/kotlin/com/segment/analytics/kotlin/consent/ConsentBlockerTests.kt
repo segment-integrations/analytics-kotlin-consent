@@ -142,7 +142,7 @@ class ConsentBlockerTests {
     @Test
     fun `block when nothing in store`() {
         val store = SynchronousStore()
-        store.provide(ConsentState.defaultState)
+        store.provide(ConsentState(mutableMapOf(), true, mutableListOf(), true))
         val blockingPlugin = ConsentBlocker("foo", store)
 
         // Empty context
@@ -163,5 +163,27 @@ class ConsentBlockerTests {
 
         processedEvent = blockingPlugin.execute(stamppedEvent)
         assertNull(processedEvent)
+    }
+
+    @Test
+    fun `ConsentBlocker allows everything when not enabled at Segment`() {
+        val store = SynchronousStore()
+        store.provide(ConsentState(mapOf("foo" to arrayOf("cat1")), false, mutableListOf(), false))
+        val blockingPlugin = ConsentBlocker("foo", store)
+
+        val event = TrackEvent(properties = emptyJsonObject, event = "MyEvent")
+        event.context = emptyJsonObject
+        assertNotNull(blockingPlugin.execute(event))
+    }
+
+    @Test
+    fun `SegmentConsentBlocker allows everything when not enabled at Segment`() {
+        val store = SynchronousStore()
+        store.provide(ConsentState(mutableMapOf(), false, mutableListOf(), false))
+        val blockingPlugin = SegmentConsentBlocker(store)
+
+        val event = TrackEvent(properties = emptyJsonObject, event = "MyEvent")
+        event.context = emptyJsonObject
+        assertNotNull(blockingPlugin.execute(event))
     }
 }

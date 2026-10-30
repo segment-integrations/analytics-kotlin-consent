@@ -95,7 +95,7 @@ class ConsentManager(
         val destinationMapping = mutableMapOf<String, Array<String>>()
         var hasUnmappedDestinations = true
         val allCategories = mutableListOf<String>()
-        var enabledAtSegment = true
+        var enabledAtSegment = false
 
 
         for ((integrationName, integrationJson) in settings.integrations) {
@@ -138,7 +138,7 @@ class ConsentManager(
         // Set enabledAtSegment
         try {
             settings.toJsonElement().jsonObject.get(CONSENT_SETTINGS_KEY)?.safeJsonObject.let {
-                enabledAtSegment = true
+                enabledAtSegment = it != null
             }
         } catch (t: Throwable) {
             println("Couldn't parse settings object to check if 'enabledAtSegment'.")
